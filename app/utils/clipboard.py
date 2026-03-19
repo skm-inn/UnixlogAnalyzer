@@ -7,11 +7,12 @@ via xclip / xsel / wl-paste / pbpaste, with a clear fallback message.
 """
 
 import subprocess
+from typing import Optional
 from textual.widgets import Input
 from textual.events import Paste
 
 
-def _read_os_clipboard() -> str | None:
+def _read_os_clipboard() -> Optional[str]:
     """Try each platform clipboard tool and return text, or None on failure."""
     commands = [
         ["xclip", "-o", "-selection", "clipboard"],   # X11 (most Linux desktops)

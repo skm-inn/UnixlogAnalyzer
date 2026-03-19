@@ -10,8 +10,8 @@ FAIL=0
 SAMPLE="tests/sample_logs"
 
 # ── helpers ─────────────────────────────────────────────────
-ok()  { echo "  [PASS] $1"; ((PASS++)); }
-fail(){ echo "  [FAIL] $1"; ((FAIL++)); }
+ok()  { echo "  [PASS] $1"; PASS=$((PASS + 1)); }
+fail(){ echo "  [FAIL] $1"; FAIL=$((FAIL + 1)); }
 
 run_python() {
     python - "$@" 2>/dev/null

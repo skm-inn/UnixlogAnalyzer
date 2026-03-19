@@ -23,9 +23,12 @@ def validate_file_pattern(pattern: str) -> Tuple[bool, str]:
     """Validate an optional file name glob pattern. Returns (is_valid, message)."""
     if not pattern or not pattern.strip():
         return True, "All files"
+    p = pattern.strip()
+    if "/" in p or "\\" in p or ".." in p:
+        return False, "Pattern must be a filename pattern only (no paths or ..)"
     try:
-        fnmatch.fnmatch("test.log", pattern.strip())
-        return True, f"Filter: {pattern.strip()}"
+        fnmatch.fnmatch("test.log", p)
+        return True, f"Filter: {p}"
     except Exception as e:
         return False, f"Invalid pattern: {e}"
 

@@ -7,7 +7,7 @@
 > or recreate the project exactly as built.
 >
 > **Last Updated:** 2026-03-19
-> **Build Status:** v1.0.1 — OS clipboard paste fixed for all Input fields
+> **Build Status:** v1.0.2 — All 11 sanity tests passing, Python 3.9 compatible
 
 ---
 
@@ -555,6 +555,7 @@ Saved inside `lookup/<run>/`. Contains full prompt + log content ready to paste 
 | 2026-03-19 | 0.4.0 | Added `logAnalyzer.md` living document requirement |
 | 2026-03-19 | 1.0.0 | Full implementation complete: all 9 screens, main app, test suite, sample logs |
 | 2026-03-19 | 1.0.1 | Fix: OS clipboard paste (Ctrl+V / right-click) for all Input fields via ClipboardInput subclass; added app/utils/clipboard.py; updated paths.py and criteria.py |
+| 2026-03-19 | 1.0.2 | Fix: Python 3.9 compat — replace str|None union syntax with Optional[str] in clipboard.py; fix test script counter bug; add path-traversal guard to validate_file_pattern |
 
 ---
 
