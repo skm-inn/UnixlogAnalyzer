@@ -77,9 +77,12 @@ class ResultsScreen(Screen):
             with Horizontal(id="btn-row"):
                 yield Button("◄ New Search", id="btn-new-search")
                 yield Button("Export TXT", id="btn-export")
-                yield Button("Copy Files ►", id="btn-copy", variant="primary")
-                if count == 0:
-                    self.query_one("#btn-copy").disabled = True
+                yield Button(
+                    "Copy Files ►",
+                    id="btn-copy",
+                    variant="primary",
+                    disabled=(count == 0),
+                )
         yield Static(
             "↑↓: scroll  ·  Enter: select  ·  Tab: next button  ·  Ctrl+Q: quit",
             id="footer",
