@@ -6,6 +6,7 @@ from textual.widgets import Button, Input, Label, Static
 from textual.containers import Vertical, Horizontal
 
 from app.utils.validators import validate_path
+from app.utils.clipboard import ClipboardInput
 
 NUM_PATHS = 5
 
@@ -76,7 +77,7 @@ class LogPathsScreen(Screen):
                 with Horizontal(classes="path-row"):
                     required = " *" if i == 1 else "  "
                     yield Label(f"Path {i}{required}", classes="path-label")
-                    yield Input(
+                    yield ClipboardInput(
                         placeholder=f"/var/log/path{i}",
                         id=f"path-{i}",
                         classes="path-input",
@@ -85,7 +86,13 @@ class LogPathsScreen(Screen):
             with Horizontal(id="btn-row"):
                 yield Button("◄ Back", id="btn-back")
                 yield Button("Validate & Next ►", id="btn-next", variant="primary")
-        yield Static("Tab: next field  ·  Ctrl+Q: quit  ·  F1: help", id="footer")
+        yield Static(
+            "Tab: next field  ·  Ctrl+V: paste  ·  Ctrl+Q: quit  ·  F1: help",
+            id="footer",
+        )
+
+    def on_mount(self) -> None:
+        self.query_one("#path-1", ClipboardInput).focus()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         self._validate_input(event.input)
@@ -118,7 +125,7 @@ class LogPathsScreen(Screen):
     def _try_next(self) -> None:
         paths = []
         for i in range(1, NUM_PATHS + 1):
-            val = self.query_one(f"#path-{i}", Input).value.strip()
+            val = self.query_one(f"#path-{i}", ClipboardInput).value.strip()
             if val:
                 ok, _ = validate_path(val)
                 if ok:

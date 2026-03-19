@@ -6,6 +6,7 @@ from textual.widgets import Button, Input, Label, Static
 from textual.containers import Vertical, Horizontal
 
 from app.utils.validators import validate_file_pattern
+from app.utils.clipboard import ClipboardInput
 
 
 class SearchCriteriaScreen(Screen):
@@ -70,14 +71,14 @@ class SearchCriteriaScreen(Screen):
                 "Searched as  *term*  (case-insensitive substring match)",
                 classes="field-note",
             )
-            yield Input(placeholder="e.g. ERROR", id="term-input")
+            yield ClipboardInput(placeholder="e.g. ERROR", id="term-input")
 
             yield Label("File Name Filter  (optional)", classes="field-label")
             yield Label(
                 "e.g. *.log  app_*.log  debug*  — leave blank to search all files",
                 classes="field-note",
             )
-            yield Input(placeholder="*.log", id="pattern-input")
+            yield ClipboardInput(placeholder="*.log", id="pattern-input")
 
             yield Label("", id="preview")
 
@@ -85,17 +86,17 @@ class SearchCriteriaScreen(Screen):
                 yield Button("◄ Back", id="btn-back")
                 yield Button("Search ►", id="btn-search", variant="primary")
 
-        yield Static("Tab: next field  ·  Ctrl+Q: quit  ·  F1: help", id="footer")
+        yield Static("Tab: next field  ·  Ctrl+V: paste  ·  Ctrl+Q: quit  ·  F1: help", id="footer")
 
     def on_mount(self) -> None:
-        self.query_one("#term-input", Input).focus()
+        self.query_one("#term-input", ClipboardInput).focus()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         self._update_preview()
 
     def _update_preview(self) -> None:
-        term = self.query_one("#term-input", Input).value.strip()
-        pat = self.query_one("#pattern-input", Input).value.strip()
+        term = self.query_one("#term-input", ClipboardInput).value.strip()
+        pat = self.query_one("#pattern-input", ClipboardInput).value.strip()
         preview = self.query_one("#preview", Label)
         if not term:
             preview.update("")
@@ -113,11 +114,11 @@ class SearchCriteriaScreen(Screen):
         self._try_search()
 
     def _try_search(self) -> None:
-        term = self.query_one("#term-input", Input).value.strip()
+        term = self.query_one("#term-input", ClipboardInput).value.strip()
         if not term:
             self.notify("Please enter a search term.", severity="error")
             return
-        pat = self.query_one("#pattern-input", Input).value.strip()
+        pat = self.query_one("#pattern-input", ClipboardInput).value.strip()
         ok, msg = validate_file_pattern(pat)
         if not ok:
             self.notify(f"Invalid pattern: {msg}", severity="error")

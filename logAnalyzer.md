@@ -7,7 +7,7 @@
 > or recreate the project exactly as built.
 >
 > **Last Updated:** 2026-03-19
-> **Build Status:** v1.0.0 COMPLETE — All screens implemented, tests passing
+> **Build Status:** v1.0.1 — OS clipboard paste fixed for all Input fields
 
 ---
 
@@ -554,6 +554,7 @@ Saved inside `lookup/<run>/`. Contains full prompt + log content ready to paste 
 | 2026-03-19 | 0.3.0 | Replaced Anthropic with HuggingFace + Ollama + Prompt Export |
 | 2026-03-19 | 0.4.0 | Added `logAnalyzer.md` living document requirement |
 | 2026-03-19 | 1.0.0 | Full implementation complete: all 9 screens, main app, test suite, sample logs |
+| 2026-03-19 | 1.0.1 | Fix: OS clipboard paste (Ctrl+V / right-click) for all Input fields via ClipboardInput subclass; added app/utils/clipboard.py; updated paths.py and criteria.py |
 
 ---
 
