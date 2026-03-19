@@ -45,7 +45,7 @@ def count_files(
             continue
         for _, _, files in _walk_safe(log_path, seen):
             for filename in files:
-                if file_pattern and not fnmatch.fnmatch(filename, file_pattern):
+                if file_pattern and not fnmatch.fnmatch(filename.lower(), file_pattern.lower()):
                     continue
                 count += 1
     return count
@@ -71,7 +71,7 @@ def search_logs(
             continue
         for root, _, files in _walk_safe(log_path, seen):
             for filename in sorted(files):
-                if file_pattern and not fnmatch.fnmatch(filename, file_pattern):
+                if file_pattern and not fnmatch.fnmatch(filename.lower(), file_pattern.lower()):
                     continue
                 filepath = os.path.join(root, filename)
                 if is_binary(filepath):

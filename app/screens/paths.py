@@ -94,7 +94,7 @@ class LogPathsScreen(Screen):
                     )
                     yield Label("", id=f"icon-{i}", classes="status-icon")
                     yield Button(
-                        "[Browse]",
+                        "Browse",
                         id=f"browse-{i}",
                         classes="browse-btn",
                     )

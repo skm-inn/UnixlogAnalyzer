@@ -114,9 +114,8 @@ class ResultsScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         bid = event.button.id
         if bid == "btn-new-search":
-            # Pop back to welcome (clear the stack)
-            while len(self.app.screen_stack) > 1:
-                self.app.pop_screen()
+            from app.screens.welcome import WelcomeScreen
+            self.app.switch_screen(WelcomeScreen())
         elif bid == "btn-export":
             self._export_report()
         elif bid == "btn-copy":
