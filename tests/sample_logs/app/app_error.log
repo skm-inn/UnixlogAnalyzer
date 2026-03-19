@@ -1,0 +1,10 @@
+2024-01-15 08:30:11 ERROR Connection pool exhausted
+2024-01-15 08:30:12 ERROR Failed to acquire DB connection after 30s timeout
+2024-01-15 10:22:44 ERROR NullPointerException in UserService.getUserById()
+2024-01-15 14:33:07 ERROR Database connection refused: FATAL reserved slots
+2024-01-15 14:33:08 ERROR Application entering degraded mode
+2024-01-15 17:44:01 ERROR OutOfMemoryError: Java heap space
+2024-01-15 17:44:02 ERROR   at java.util.Arrays.copyOf(Arrays.java:3210)
+2024-01-15 17:44:02 ERROR   at java.util.ArrayList.grow(ArrayList.java:265)
+2024-01-15 17:44:03 ERROR JVM emergency GC triggered - heap: 4.0GB / 4.0GB
+2024-01-15 17:44:15 ERROR JVM restart initiated

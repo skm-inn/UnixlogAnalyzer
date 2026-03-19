@@ -1,0 +1,29 @@
+2024-01-15 08:00:01 INFO  Application starting up
+2024-01-15 08:00:02 INFO  Loading configuration from /etc/app/config.yaml
+2024-01-15 08:00:03 INFO  Database connection established
+2024-01-15 08:00:04 INFO  Cache initialized with 512MB
+2024-01-15 08:01:00 INFO  Server listening on port 8080
+2024-01-15 08:15:22 WARN  High memory usage detected: 78%
+2024-01-15 08:30:11 ERROR Connection pool exhausted - all 50 connections in use
+2024-01-15 08:30:12 ERROR Failed to acquire DB connection after 30s timeout
+2024-01-15 08:30:12 ERROR com.app.db.ConnectionPool: timeout waiting for connection
+2024-01-15 08:30:13 WARN  Retrying request (attempt 1/3) for user_id=4521
+2024-01-15 08:30:15 WARN  Retrying request (attempt 2/3) for user_id=4521
+2024-01-15 08:30:17 ERROR Request failed after 3 retries - returning 503 to client
+2024-01-15 09:00:00 INFO  Daily health check started
+2024-01-15 09:00:01 INFO  All services nominal
+2024-01-15 10:22:44 ERROR NullPointerException in UserService.getUserById()
+2024-01-15 10:22:44 ERROR   at com.app.service.UserService.getUserById(UserService.java:142)
+2024-01-15 10:22:44 ERROR   at com.app.api.UserController.getUser(UserController.java:87)
+2024-01-15 10:22:44 ERROR   at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0
+2024-01-15 11:00:00 INFO  Scheduled cleanup job started
+2024-01-15 11:00:05 INFO  Removed 1247 expired sessions
+2024-01-15 12:00:00 INFO  Memory GC triggered - heap before: 2.1GB after: 1.4GB
+2024-01-15 14:33:07 ERROR Database connection refused: FATAL: remaining connection slots are reserved
+2024-01-15 14:33:08 ERROR Application entering degraded mode
+2024-01-15 14:33:09 WARN  Circuit breaker OPEN for database service
+2024-01-15 14:35:00 INFO  Database connection restored
+2024-01-15 14:35:01 INFO  Circuit breaker CLOSED - service recovered
+2024-01-15 16:00:00 INFO  Peak traffic period: 2,341 requests/minute
+2024-01-15 18:00:00 INFO  Traffic normalized: 892 requests/minute
+2024-01-15 23:59:59 INFO  Daily statistics: 847,291 requests, 12 errors, 99.998% uptime

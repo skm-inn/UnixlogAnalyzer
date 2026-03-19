@@ -1,0 +1,4 @@
+textual>=0.47.0
+rich>=13.0.0
+huggingface_hub>=0.23.0
+requests>=2.31.0

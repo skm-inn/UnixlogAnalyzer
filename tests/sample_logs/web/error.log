@@ -1,0 +1,7 @@
+2024/01/15 08:10:11 [error] 1234#0: *42 invalid request body, client: 10.0.1.103
+2024/01/15 08:30:11 [error] 1234#0: *77 upstream timed out (110: Connection timed out)
+2024/01/15 08:30:12 [error] 1234#0: *78 upstream timed out (110: Connection timed out)
+2024/01/15 10:22:44 [error] 1234#0: *99 upstream sent invalid header while reading
+2024/01/15 14:33:07 [error] 1234#0: *201 connect() failed (111: Connection refused) upstream
+2024/01/15 14:33:08 [error] 1234#0: *202 no live upstreams while connecting to upstream
+2024/01/15 17:44:03 [crit]  1234#0: *300 SSL_do_handshake() failed (SSL: error:0A000119)

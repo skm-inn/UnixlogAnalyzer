@@ -1,0 +1,17 @@
+Jan 15 08:00:00 prodserver systemd[1]: Started Application Service
+Jan 15 08:00:02 prodserver kernel: EXT4-fs (sda1): mounted filesystem
+Jan 15 08:15:00 prodserver sshd[1234]: Accepted publickey for deploy from 10.0.1.5
+Jan 15 09:00:00 prodserver cron[5678]: (root) CMD (/usr/bin/health-check.sh)
+Jan 15 10:22:44 prodserver kernel: ERROR Out of memory: Kill process 9821 (java)
+Jan 15 10:22:44 prodserver kernel: oom_kill_process: Kill process 9821 score 892
+Jan 15 12:00:00 prodserver systemd[1]: logrotate.service: Succeeded.
+Jan 15 14:33:06 prodserver kernel: TCP: eth0: driver reset
+Jan 15 14:33:07 prodserver kernel: ERROR network interface reset
+Jan 15 14:33:08 prodserver systemd[1]: postgresql.service: Start request repeated too quickly
+Jan 15 14:33:08 prodserver systemd[1]: postgresql.service: Failed with result 'exit-code'
+Jan 15 14:33:09 prodserver systemd[1]: Failed to start PostgreSQL Database Server
+Jan 15 14:35:00 prodserver systemd[1]: Started PostgreSQL Database Server
+Jan 15 16:00:00 prodserver kernel: WARNING: CPU: 3 PID: 0 at kernel/rcu/tree.c:1234
+Jan 15 18:00:00 prodserver sshd[2345]: Disconnected from 10.0.1.5
+Jan 15 23:00:00 prodserver logrotate: rotating log files
+Jan 15 23:59:59 prodserver systemd[1]: Daily system backup completed
