@@ -86,7 +86,7 @@ class SearchCriteriaScreen(Screen):
                 yield Button("◄ Back", id="btn-back")
                 yield Button("Search ►", id="btn-search", variant="primary")
 
-        yield Static("Tab: next field  ·  Ctrl+V: paste  ·  Ctrl+Q: quit  ·  F1: help", id="footer")
+        yield Static("Tab: next field  ·  Shift+Ins / right-click: paste  ·  Ctrl+Q: quit", id="footer")
 
     def on_mount(self) -> None:
         self.query_one("#term-input", ClipboardInput).focus()

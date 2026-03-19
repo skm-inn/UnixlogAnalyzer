@@ -102,7 +102,7 @@ class LogPathsScreen(Screen):
                 yield Button("◄ Back", id="btn-back")
                 yield Button("Validate & Next ►", id="btn-next", variant="primary")
         yield Static(
-            "Tab: next field  ·  [Browse]: pick folder  ·  Ctrl+Q: quit  ·  F1: help",
+            "Tab: next field  ·  Browse: pick folder  ·  Shift+Ins / right-click: paste  ·  Ctrl+Q: quit",
             id="footer",
         )
 
