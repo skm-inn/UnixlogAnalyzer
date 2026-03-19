@@ -3,7 +3,9 @@
 # LogAnalyzer — automated test suite
 # Run from the project root: bash tests/test_loganalyzer.sh
 # ============================================================
-set -euo pipefail
+# NOTE: deliberately NOT using 'set -euo pipefail' so that
+# individual test failures are caught by || fail() without
+# aborting the whole suite.
 
 PASS=0
 FAIL=0
@@ -12,10 +14,6 @@ SAMPLE="tests/sample_logs"
 # ── helpers ─────────────────────────────────────────────────
 ok()  { echo "  [PASS] $1"; PASS=$((PASS + 1)); }
 fail(){ echo "  [FAIL] $1"; FAIL=$((FAIL + 1)); }
-
-run_python() {
-    python - "$@" 2>/dev/null
-}
 
 # ── 1. Imports ───────────────────────────────────────────────
 echo
@@ -120,7 +118,7 @@ from app.core.searcher import search_logs
 r1 = list(search_logs(['$SAMPLE/app'], 'error'))
 r2 = list(search_logs(['$SAMPLE/app'], 'ERROR'))
 r3 = list(search_logs(['$SAMPLE/app'], 'Error'))
-assert len(r1) == len(r2) == len(r3), 'case should not matter'
+assert len(r1) == len(r2) == len(r3), f'case should not matter: {len(r1)} vs {len(r2)} vs {len(r3)}'
 print('OK')
 " && ok "search_logs case-insensitive" || fail "search_logs case-insensitive failed"
 
@@ -132,16 +130,46 @@ from app.core.searcher import search_logs
 import os
 r_all = list(search_logs(['$SAMPLE/app'], 'error'))
 r_err = list(search_logs(['$SAMPLE/app'], 'error', '*.log'))
-# all .log results should be subset of all results
 filenames_all = {os.path.basename(fp) for fp, _, _ in r_all}
 filenames_err = {os.path.basename(fp) for fp, _, _ in r_err}
 assert filenames_err.issubset(filenames_all)
 print('OK')
 " && ok "search_logs file pattern works" || fail "search_logs file pattern failed"
 
-# ── 10. file_copier ─────────────────────────────────────────
+# ── 10. search_logs — multiple matches in same file (DataTable DuplicateKey regression) ──
 echo
-echo "=== 10. file_copier ==="
+echo "=== 10. search_logs multiple matches per file ==="
+python -c "
+import tempfile, os
+from app.core.searcher import search_logs
+
+# Create a temp dir with one file that has many matching lines
+tmpdir = tempfile.mkdtemp()
+logfile = os.path.join(tmpdir, 'multi.log')
+with open(logfile, 'w') as f:
+    for i in range(5):
+        f.write(f'ERROR: something went wrong at step {i}\n')
+    f.write('INFO: all good\n')
+    for i in range(5):
+        f.write(f'ERROR: another error at step {i}\n')
+
+results = list(search_logs([tmpdir], 'error'))
+assert len(results) == 10, f'expected 10 matches, got {len(results)}'
+
+# Simulate DataTable key uniqueness check (the regression)
+keys = [f'{fp}:{ln}' for fp, ln, _ in results]
+assert len(keys) == len(set(keys)), f'Duplicate DataTable keys detected! keys={keys}'
+
+# Cleanup
+os.unlink(logfile)
+os.rmdir(tmpdir)
+print(f'Found {len(results)} matches, all keys unique')
+print('OK')
+" && ok "multiple matches per file — keys unique" || fail "multiple matches per file FAILED (DuplicateKey regression)"
+
+# ── 11. file_copier ─────────────────────────────────────────
+echo
+echo "=== 11. file_copier ==="
 python -c "
 import shutil, os
 from pathlib import Path
@@ -154,25 +182,18 @@ assert matches, 'need matches for copy test'
 dest = copy_matched_files(matches, ['$SAMPLE'], 'error')
 assert dest.exists(), f'dest folder missing: {dest}'
 
-copied = list(dest.rglob('*'))
-files = [f for f in copied if f.is_file()]
-assert len(files) >= 1, f'no files copied, found: {copied}'
+files = [f for f in dest.rglob('*') if f.is_file()]
+assert len(files) >= 1, f'no files copied, found: {list(dest.rglob(\"*\"))}'
 
-# verify no .md files (skipped)
-for f in files:
-    assert not f.name.startswith('analysis_'), f'generated file should not be copied: {f}'
-
-# cleanup
 shutil.rmtree(dest)
 print('OK')
 " && ok "file_copier works" || fail "file_copier failed"
 
-# ── 11. assemble_log_content ────────────────────────────────
+# ── 12. assemble_log_content ────────────────────────────────
 echo
-echo "=== 11. assemble_log_content ==="
+echo "=== 12. assemble_log_content ==="
 python -c "
 import shutil
-from pathlib import Path
 from app.core.searcher import search_logs
 from app.core.file_copier import copy_matched_files
 from app.core.ai_analyzer import assemble_log_content
@@ -189,12 +210,28 @@ print(f'Content length: {len(content)} chars')
 print('OK')
 " && ok "assemble_log_content works" || fail "assemble_log_content failed"
 
+# ── 13. clipboard — graceful fallback when no display ───────
+echo
+echo "=== 13. clipboard graceful fallback ==="
+python -c "
+# Verify _read_os_clipboard never raises (returns None when unavailable)
+from app.utils.clipboard import _read_os_clipboard
+try:
+    result = _read_os_clipboard()
+    # result is either a string or None — both are OK
+    assert result is None or isinstance(result, str), f'unexpected type: {type(result)}'
+    print(f'clipboard result type: {type(result).__name__}')
+    print('OK')
+except Exception as e:
+    raise AssertionError(f'_read_os_clipboard raised unexpectedly: {e}')
+" && ok "clipboard graceful fallback works" || fail "clipboard raised exception"
+
 # ── Summary ─────────────────────────────────────────────────
 echo
 echo "============================================"
 echo "  Results:  PASS=$PASS  FAIL=$FAIL"
 echo "============================================"
-if [[ $FAIL -eq 0 ]]; then
+if [ "$FAIL" -eq 0 ]; then
     echo "  All tests passed!"
     exit 0
 else

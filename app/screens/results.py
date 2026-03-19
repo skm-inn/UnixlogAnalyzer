@@ -96,7 +96,7 @@ class ResultsScreen(Screen):
         for filepath, lineno, line_text in self.app.matches:
             short_path = self._shorten_path(filepath)
             display_line = line_text.strip()[:120]
-            table.add_row(short_path, str(lineno), display_line, key=filepath)
+            table.add_row(short_path, str(lineno), display_line, key=f"{filepath}:{lineno}")
 
         if not self.app.matches:
             table.add_row("—  No matches found  —", "", "")
