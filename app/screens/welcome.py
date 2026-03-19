@@ -38,7 +38,7 @@ class WelcomeScreen(Screen):
         padding: 0 2 1 2;
     }
     #start-btn {
-        margin: 2 auto;
+        margin: 2 0;
         min-width: 24;
     }
     #hint {
