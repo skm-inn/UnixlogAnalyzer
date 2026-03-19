@@ -91,26 +91,26 @@ class AIProgressScreen(Screen):
         tier = detect_ai_tier()
 
         # Phase 1: assemble log content
-        self.call_from_thread(
+        self.app.call_from_thread(
             self.query_one("#phase-label", Label).update,
             "Assembling log content…",
         )
         log_content = assemble_log_content(folder, term)
 
         if tier == "prompt_export":
-            self.call_from_thread(
+            self.app.call_from_thread(
                 self.query_one("#phase-label", Label).update,
                 "Exporting prompt file (no AI available)…",
             )
             out = export_prompt(folder, term, ctx, log_content)
-            self.call_from_thread(
+            self.app.call_from_thread(
                 self._append_log,
                 f"No AI engine detected.\n\nPrompt file saved:\n{out}\n\n"
                 "Copy this file and paste its contents into ChatGPT / Claude.ai / Gemini.",
             )
             self.app.analysis_text = ""
             self.app.prompt_export_path = str(out)
-            self.call_from_thread(self._finish)
+            self.app.call_from_thread(self._finish)
             return
 
         # Phase 2: stream from AI
@@ -118,7 +118,7 @@ class AIProgressScreen(Screen):
             "huggingface": "HuggingFace Inference API",
             "ollama": "Ollama Local Model",
         }
-        self.call_from_thread(
+        self.app.call_from_thread(
             self.query_one("#phase-label", Label).update,
             f"Streaming analysis from  {tier_names.get(tier, tier)}…",
         )
@@ -128,12 +128,12 @@ class AIProgressScreen(Screen):
 
         for chunk in stream_fn(log_content, ctx, term):
             collected.append(chunk)
-            self.call_from_thread(self._append_log, chunk)
+            self.app.call_from_thread(self._append_log, chunk)
 
         full_text = "".join(collected)
 
         # Phase 3: save report
-        self.call_from_thread(
+        self.app.call_from_thread(
             self.query_one("#phase-label", Label).update,
             "Saving report…",
         )
@@ -141,11 +141,11 @@ class AIProgressScreen(Screen):
         self.app.analysis_text = full_text
         self.app.report_path = str(report_path)
 
-        self.call_from_thread(
+        self.app.call_from_thread(
             self._append_log,
             f"\n\n[Report saved: {report_path}]",
         )
-        self.call_from_thread(self._finish)
+        self.app.call_from_thread(self._finish)
 
     def _append_log(self, text: str) -> None:
         self.query_one("#stream-log", Log).write(text)

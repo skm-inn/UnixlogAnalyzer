@@ -116,9 +116,9 @@ class SearchProgressScreen(Screen):
 
     def _on_file_scanned(self, filepath: str) -> None:
         """Called from background thread for each file scanned."""
-        self.call_from_thread(setattr, self, "files_scanned", self.files_scanned + 1)
+        self.app.call_from_thread(setattr, self, "files_scanned", self.files_scanned + 1)
         short = filepath[-58:] if len(filepath) > 58 else filepath
-        self.call_from_thread(
+        self.app.call_from_thread(
             self.query_one("#current-file", Label).update, short
         )
 
@@ -130,10 +130,10 @@ class SearchProgressScreen(Screen):
 
         # Phase 1: count files
         total = count_files(paths, pattern)
-        self.call_from_thread(setattr, self, "total_files", max(total, 1))
+        self.app.call_from_thread(setattr, self, "total_files", max(total, 1))
 
         # Phase 2: search
-        self.call_from_thread(
+        self.app.call_from_thread(
             self.query_one("#phase-label", Label).update,
             f"Searching for  [bold yellow]*{term}*[/bold yellow]",
         )
@@ -145,13 +145,13 @@ class SearchProgressScreen(Screen):
             if self._cancelled:
                 return
             matches.append((filepath, lineno, line_text))
-            self.call_from_thread(setattr, self, "matches_found", len(matches))
+            self.app.call_from_thread(setattr, self, "matches_found", len(matches))
 
         if self._cancelled:
             return
 
         self.app.matches = matches
-        self.call_from_thread(self._go_to_results)
+        self.app.call_from_thread(self._go_to_results)
 
     def _go_to_results(self) -> None:
         from app.screens.results import ResultsScreen

@@ -114,10 +114,10 @@ class CopyConfirmScreen(Screen):
         )
 
     def _progress_cb(self, idx: int, total: int, filepath: str) -> None:
-        self.call_from_thread(setattr, self, "copied", idx)
-        self.call_from_thread(setattr, self, "total", total)
+        self.app.call_from_thread(setattr, self, "copied", idx)
+        self.app.call_from_thread(setattr, self, "total", total)
         short = filepath[-58:] if len(filepath) > 58 else filepath
-        self.call_from_thread(
+        self.app.call_from_thread(
             self.query_one("#current-file", Label).update, short
         )
 
@@ -130,7 +130,7 @@ class CopyConfirmScreen(Screen):
             progress_callback=self._progress_cb,
         )
         self.app.lookup_folder = dest
-        self.call_from_thread(self._on_copy_done, str(dest))
+        self.app.call_from_thread(self._on_copy_done, str(dest))
 
     def _on_copy_done(self, dest: str) -> None:
         self._done = True
