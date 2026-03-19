@@ -1,5 +1,7 @@
 """Screen 2 — Log path input (up to 5 paths)."""
 
+import os
+
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Button, Input, Label, Static
@@ -34,7 +36,7 @@ class LogPathsScreen(Screen):
         border-top: solid $border;
     }
     #form-panel {
-        width: 72;
+        width: 84;
         border: solid $border;
         background: $panel;
         padding: 1 2;
@@ -45,7 +47,7 @@ class LogPathsScreen(Screen):
         margin-bottom: 1;
     }
     .path-label {
-        width: 12;
+        width: 10;
         content-align: left middle;
         color: $text-muted;
     }
@@ -55,6 +57,10 @@ class LogPathsScreen(Screen):
     .status-icon {
         width: 4;
         content-align: center middle;
+    }
+    .browse-btn {
+        width: 12;
+        margin-left: 1;
     }
     #hint {
         color: $text-muted;
@@ -72,7 +78,11 @@ class LogPathsScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Static("Step 1 of 3  —  Log File Paths", id="header")
         with Vertical(id="form-panel"):
-            yield Label("Enter up to 5 log directory paths  (Path 1 is required):", id="hint")
+            yield Label(
+                "Enter up to 5 log directory paths  (Path 1 is required):"
+                "  Type a path  OR  click [Browse]",
+                id="hint",
+            )
             for i in range(1, NUM_PATHS + 1):
                 with Horizontal(classes="path-row"):
                     required = " *" if i == 1 else "  "
@@ -83,11 +93,16 @@ class LogPathsScreen(Screen):
                         classes="path-input",
                     )
                     yield Label("", id=f"icon-{i}", classes="status-icon")
+                    yield Button(
+                        "[Browse]",
+                        id=f"browse-{i}",
+                        classes="browse-btn",
+                    )
             with Horizontal(id="btn-row"):
                 yield Button("◄ Back", id="btn-back")
                 yield Button("Validate & Next ►", id="btn-next", variant="primary")
         yield Static(
-            "Tab: next field  ·  Ctrl+V: paste  ·  Ctrl+Q: quit  ·  F1: help",
+            "Tab: next field  ·  [Browse]: pick folder  ·  Ctrl+Q: quit  ·  F1: help",
             id="footer",
         )
 
@@ -117,10 +132,34 @@ class LogPathsScreen(Screen):
             inp.add_class("invalid-input")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btn-back":
+        bid = event.button.id
+        if bid == "btn-back":
             self.app.pop_screen()
-        elif event.button.id == "btn-next":
+        elif bid == "btn-next":
             self._try_next()
+        elif bid and bid.startswith("browse-"):
+            idx = bid.split("-")[1]
+            self._open_browser(idx)
+
+    def _open_browser(self, idx: str) -> None:
+        """Open the directory browser modal for path slot `idx`."""
+        from app.screens.browse import BrowseScreen
+
+        current = self.query_one(f"#path-{idx}", ClipboardInput).value.strip()
+        # Start the tree at the current value (if valid) or the filesystem root
+        if current and os.path.isdir(current):
+            start = current
+        else:
+            start = "/"
+
+        def _on_selected(path: str) -> None:
+            if path:
+                inp = self.query_one(f"#path-{idx}", ClipboardInput)
+                inp.value = path
+                inp.focus()
+                self._validate_input(inp)
+
+        self.app.push_screen(BrowseScreen(start), _on_selected)
 
     def _try_next(self) -> None:
         paths = []

@@ -7,7 +7,7 @@
 > or recreate the project exactly as built.
 >
 > **Last Updated:** 2026-03-19
-> **Build Status:** v1.0.4 — All 11 sanity tests passing, results screen fixed
+> **Build Status:** v1.0.5 — All 11 sanity tests passing, directory browser added
 
 ---
 
@@ -558,6 +558,7 @@ Saved inside `lookup/<run>/`. Contains full prompt + log content ready to paste 
 | 2026-03-19 | 1.0.2 | Fix: Python 3.9 compat — replace str|None union syntax with Optional[str] in clipboard.py; fix test script counter bug; add path-traversal guard to validate_file_pattern |
 | 2026-03-19 | 1.0.3 | Fix: call_from_thread not available on Screen in this Textual version — changed to self.app.call_from_thread in progress.py, copy_confirm.py, ai_progress.py |
 | 2026-03-19 | 1.0.4 | Fix: query_one cannot be called inside compose() — moved disabled=(count==0) into Button constructor in results.py |
+| 2026-03-19 | 1.0.5 | Feat: directory browser modal (BrowseScreen) using DirectoryTree; added [Browse] button to each path slot in LogPathsScreen |
 
 ---
 
