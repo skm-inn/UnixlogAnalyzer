@@ -192,8 +192,11 @@ def stream_huggingface(
     usr_m = _user_message(log_content, search_term)
 
     for model in HF_MODELS:
+        short = model.split("/")[-1]
+        yield f"[Connecting to {short} — free-tier models may take 30–120 s to load…]\n\n"
         try:
-            client = InferenceClient(model=model, token=token)
+            client = InferenceClient(model=model, token=token, timeout=150)
+            got_chunk = False
             for chunk in client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": sys_p},
@@ -204,14 +207,19 @@ def stream_huggingface(
             ):
                 delta = chunk.choices[0].delta.content
                 if delta:
+                    if not got_chunk:
+                        yield "\n"  # blank line after the "connecting" message
+                        got_chunk = True
                     yield delta
             return  # success — stop iterating models
         except Exception as exc:
             msg = str(exc)
             if "429" in msg or "rate" in msg.lower():
-                yield f"\n[Rate limited on {model.split('/')[-1]}, trying next…]\n"
+                yield f"\n[Rate limited on {short}, trying next model…]\n"
+            elif "timeout" in msg.lower() or "timed out" in msg.lower():
+                yield f"\n[{short} timed out after 150 s, trying next model…]\n"
             else:
-                yield f"\n[{model.split('/')[-1]} error: {exc}]\n"
+                yield f"\n[{short} error: {exc}]\n"
             continue
 
     yield "\n\n[All HuggingFace models unavailable — try Ollama or Prompt Export]"

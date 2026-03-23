@@ -120,7 +120,7 @@ class AIProgressScreen(Screen):
         }
         self.app.call_from_thread(
             self.query_one("#phase-label", Label).update,
-            f"Streaming analysis from  {tier_names.get(tier, tier)}…",
+            f"Streaming from {tier_names.get(tier, tier)}  (free-tier cold start may take 1–2 min)…",
         )
 
         collected = []
