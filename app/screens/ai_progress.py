@@ -70,7 +70,7 @@ class AIProgressScreen(Screen):
         yield Static("AI Analysis — Processing", id="header")
         with Vertical(id="ai-panel"):
             yield Label("Preparing log content…", id="phase-label")
-            yield Log(id="stream-log", highlight=True, markup=False)
+            yield Log(id="stream-log")
             with Horizontal(id="btn-row"):
                 yield Button("View Report ►", id="btn-done", variant="primary", disabled=True)
         yield Static("Please wait — analysis may take 30-120 seconds", id="footer")
