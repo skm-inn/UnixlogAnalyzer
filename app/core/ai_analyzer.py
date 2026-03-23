@@ -69,9 +69,20 @@ def _user_message(log_content: str, search_term: str) -> str:
 # ---------------------------------------------------------------------------
 # Tier detection
 # ---------------------------------------------------------------------------
+def _hf_reachable() -> bool:
+    """Quick TCP check — returns False if firewall blocks HuggingFace."""
+    import socket
+    try:
+        s = socket.create_connection(("api-inference.huggingface.co", 443), timeout=3)
+        s.close()
+        return True
+    except Exception:
+        return False
+
+
 def detect_ai_tier() -> str:
     """Return 'huggingface', 'ollama', or 'prompt_export'."""
-    if os.environ.get("HUGGINGFACE_API_TOKEN"):
+    if os.environ.get("HUGGINGFACE_API_TOKEN") and _hf_reachable():
         return "huggingface"
     try:
         r = requests.get("http://localhost:11434/api/tags", timeout=2)
