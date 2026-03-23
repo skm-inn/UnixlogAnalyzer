@@ -99,12 +99,14 @@ class CopyConfirmScreen(Screen):
         if bid == "btn-back":
             self.app.pop_screen()
         elif bid == "btn-start":
-            self.query_one("#btn-start").disabled = True
-            self.query_one("#btn-back").disabled = True
-            self._do_copy()
-        elif bid == "btn-analyze":
-            from app.screens.ai_context import AIContextScreen
-            self.app.push_screen(AIContextScreen())
+            if self._done:
+                # Copy finished — btn-start now acts as "Analyze"
+                from app.screens.ai_context import AIContextScreen
+                self.app.push_screen(AIContextScreen())
+            else:
+                self.query_one("#btn-start").disabled = True
+                self.query_one("#btn-back").disabled = True
+                self._do_copy()
 
     def watch_copied(self, value: int) -> None:
         bar = self.query_one("#copy-bar", ProgressBar)
@@ -138,10 +140,8 @@ class CopyConfirmScreen(Screen):
             f"[green]✓  Done![/green]  Saved to  [bold]{dest}[/bold]"
         )
         self.query_one("#dest-label", Label).update(f"[bold]{dest}[/bold]")
-        # Swap buttons
-        btn_row = self.query_one("#btn-row", Horizontal)
-        btn_row.remove_children()
-        btn_row.mount(Button("◄ Back to Results", id="btn-back"))
-        btn_row.mount(
-            Button("Analyze & Recommend ►", id="btn-analyze", variant="primary")
-        )
+        # Update buttons in-place (remounting causes DuplicateIds in app registry)
+        self.query_one("#btn-back", Button).label = "◄ Back to Results"
+        self.query_one("#btn-back", Button).disabled = False
+        self.query_one("#btn-start", Button).label = "Analyze & Recommend ►"
+        self.query_one("#btn-start", Button).disabled = False
