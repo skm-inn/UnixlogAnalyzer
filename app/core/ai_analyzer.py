@@ -16,10 +16,13 @@ import requests
 # ---------------------------------------------------------------------------
 # Model preferences
 # ---------------------------------------------------------------------------
+# Smaller models (1-3B) respond faster on HuggingFace free-tier serverless API.
+# 7B+ models routinely timeout on cold starts.
 HF_MODELS = [
+    "Qwen/Qwen2.5-1.5B-Instruct",
+    "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+    "microsoft/Phi-3.5-mini-instruct",
     "mistralai/Mistral-7B-Instruct-v0.3",
-    "HuggingFaceH4/zephyr-7b-beta",
-    "Qwen/Qwen2.5-7B-Instruct",
 ]
 OLLAMA_PREFERRED = ["mistral", "llama3", "qwen2.5", "phi3", "gemma2", "llama2"]
 
@@ -170,19 +173,13 @@ def assemble_log_content(
 
 
 # ---------------------------------------------------------------------------
-# Tier 1 — HuggingFace
+# Tier 1 — HuggingFace  (uses requests directly for reliable SSE streaming)
 # ---------------------------------------------------------------------------
 def stream_huggingface(
     log_content: str,
     user_context: str,
     search_term: str,
 ) -> Generator[str, None, None]:
-    try:
-        from huggingface_hub import InferenceClient
-    except ImportError:
-        yield "[ERROR] huggingface_hub not installed. Run: pip install huggingface_hub"
-        return
-
     token = os.environ.get("HUGGINGFACE_API_TOKEN", "")
     if not token:
         yield "[ERROR] HUGGINGFACE_API_TOKEN environment variable not set."
@@ -190,37 +187,73 @@ def stream_huggingface(
 
     sys_p = _system_prompt(user_context)
     usr_m = _user_message(log_content, search_term)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "messages": [
+            {"role": "system", "content": sys_p},
+            {"role": "user", "content": usr_m},
+        ],
+        "stream": True,
+        "max_tokens": 2048,
+    }
 
     for model in HF_MODELS:
         short = model.split("/")[-1]
-        yield f"[Connecting to {short} — free-tier models may take 30–120 s to load…]\n\n"
+        yield f"[Trying {short}…]\n"
+        url = f"https://api-inference.huggingface.co/models/{model}/v1/chat/completions"
         try:
-            client = InferenceClient(model=model, token=token, timeout=150)
+            # timeout=(connect_s, read_s) — 15 s to connect, 60 s to first token
+            resp = requests.post(
+                url, headers=headers, json=payload,
+                stream=True, timeout=(15, 60),
+            )
+            if resp.status_code == 503:
+                yield f"[{short} loading on server, waiting 20 s…]\n"
+                import time; time.sleep(20)
+                resp = requests.post(
+                    url, headers=headers, json=payload,
+                    stream=True, timeout=(15, 90),
+                )
+            if resp.status_code == 429:
+                yield f"[{short} rate-limited, trying next…]\n"
+                continue
+            if resp.status_code != 200:
+                yield f"[{short} HTTP {resp.status_code}: {resp.text[:120]}]\n"
+                continue
+
             got_chunk = False
-            for chunk in client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": sys_p},
-                    {"role": "user", "content": usr_m},
-                ],
-                stream=True,
-                max_tokens=4096,
-            ):
-                delta = chunk.choices[0].delta.content
-                if delta:
-                    if not got_chunk:
-                        yield "\n"  # blank line after the "connecting" message
-                        got_chunk = True
-                    yield delta
-            return  # success — stop iterating models
+            for raw in resp.iter_lines():
+                if not raw:
+                    continue
+                line = raw.decode("utf-8") if isinstance(raw, bytes) else raw
+                if not line.startswith("data: "):
+                    continue
+                data = line[6:]
+                if data.strip() == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(data)
+                    delta = obj["choices"][0]["delta"].get("content", "")
+                    if delta:
+                        if not got_chunk:
+                            yield "\n"
+                            got_chunk = True
+                        yield delta
+                except (json.JSONDecodeError, KeyError):
+                    continue
+
+            if got_chunk:
+                return  # success
+
+            yield f"[{short} returned no content, trying next…]\n"
+
+        except requests.exceptions.Timeout:
+            yield f"[{short} timed out, trying next…]\n"
         except Exception as exc:
-            msg = str(exc)
-            if "429" in msg or "rate" in msg.lower():
-                yield f"\n[Rate limited on {short}, trying next model…]\n"
-            elif "timeout" in msg.lower() or "timed out" in msg.lower():
-                yield f"\n[{short} timed out after 150 s, trying next model…]\n"
-            else:
-                yield f"\n[{short} error: {exc}]\n"
-            continue
+            yield f"[{short} error: {exc}]\n"
 
     yield "\n\n[All HuggingFace models unavailable — try Ollama or Prompt Export]"
 
