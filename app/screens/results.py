@@ -114,14 +114,18 @@ class ResultsScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         bid = event.button.id
         if bid == "btn-new-search":
-            # Pop every screen above the root WelcomeScreen
-            for _ in range(len(self.app.screen_stack) - 1):
-                self.app.pop_screen()
+            self._go_to_welcome()
         elif bid == "btn-export":
             self._export_report()
         elif bid == "btn-copy":
             from app.screens.copy_confirm import CopyConfirmScreen
             self.app.push_screen(CopyConfirmScreen())
+
+    @work
+    async def _go_to_welcome(self) -> None:
+        """Sequentially pop all screens above WelcomeScreen."""
+        while len(self.app.screen_stack) > 1:
+            await self.app.pop_screen()
 
     def _export_report(self) -> None:
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
